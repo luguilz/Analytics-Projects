@@ -1,0 +1,110 @@
+# Este programa recebe um arquivo binÃ¡rio VAZOES.DAT dos modelos NEWAVE e DECOMP, recebe
+# do usuÃ¡rio o ano desejado das vazÃµes nos postos de mediÃ§Ã£o e cria um novo arquivo
+# VAZPAST.DAT transcrito conforme descrito na seÃ§Ã£o 3.21.3 do manual NEWAVE
+
+import numpy as np
+from codpostos import postosdemed
+from tkinter import Tk
+from tkinter import filedialog
+
+# Solicita arquivo binÃ¡rio de entrada
+print("Selecione o arquivo binÃ¡rio de vazÃµes (VAZOES.DAT).")
+Tk().withdraw()
+entrada = filedialog.askopenfilename(filetypes=[("Arq. BinÃ¡rio", ".DAT"), ("All Files", ".*")],
+                                     title="Selecione o arquivo binÃ¡rio VAZOES.DAT:")
+
+# Abre o arquivo binÃ¡rio em uma lista
+with open(entrada, "rb") as arq:
+    lista = np.fromfile(arq, dtype=np.int).tolist()
+
+# VariÃ¡veis iniciais de cÃ¡lculo
+col = 320
+lin = int(len(lista)/col)
+qtdeanos = lin / 12
+anoarq = int(1930 + qtdeanos)  # Ãšltimo ano do arq de entrada
+
+# Cria uma matriz e escreve nela as vazÃµes recebidas
+matriz = []
+b = 0  # var de iteraÃ§Ã£o
+for i in range(lin):
+    linha = []
+    for j in range(col):
+        linha.append(lista[b])
+        b += 1
+    matriz.append(linha)
+mat = np.array(matriz)
+
+# Pesquisa o mÃªs de referÃªncia do arquivo de entrada com base no posto 1
+mesref = 0
+a = True  # var de iteraÃ§Ã£o
+g = -1    # var de iteraÃ§Ã£o
+h = 0     # var de iteraÃ§Ã£o
+while a is True:
+    if mat[g][0] == 0:
+        g -= 1
+        h += 1
+    else:
+        mesref = 12 - h
+        a = False
+print("\nO mÃªs de referÃªncia do arquivo de entrada Ã© {1} de {0}!".format(anoarq, mesref))
+
+# Solicita o ano das vazÃµes
+ano = int(input("\nEntre com o ano desejado (1931-{0}) de VazÃµes Afluentes: ".format(anoarq)))  # Solicita ano-vazÃµes
+while ano > anoarq or ano < 1931:
+    print("\n -> Ano InvÃ¡lido!!! Escolha valores entre 1931 e {0} !".format(anoarq))
+    ano = int(input("Entre novamente com o ano desejado (1931-{0}) de VazÃµes Afluentes: ".format(anoarq)))
+
+# Cria matriz com os dados do ano solicitado
+x = 12*(ano - 1931)
+y = x + 12
+mat = mat[x:y]
+
+# Cria matriz transposta
+matriz_transp = mat.transpose()
+# print("\n", mat.shape, "===>", matriz_transp.shape)
+
+# InserÃ§Ã£o do codigo-nome na matriz de vazoes
+postos = np.array(postosdemed)
+mt = np.array(matriz_transp)
+new = np.concatenate((postos, mt), axis=1)
+
+# RemoÃ§Ã£o na matriz dos postos sem mediÃ§Ã£o
+f = 0  # var de iteraÃ§Ã£o
+while f < len(new):
+    if new[f][1] == "":
+        new = np.delete(new, f, axis=0)
+    else:
+        f += 1
+
+# Escrita e gravaÃ§Ã£o da matriz no arquivo VAZPAST.DAT
+print("\nSelecione a pasta onde o arquivo VAZPAST.DAT serÃ¡ salvo.")
+arqdir = filedialog.askdirectory(title="Salvar arquivo VAZPAST.DAT na pasta:",)
+arq = open(arqdir + "/VAZPAST.DAT", "w")
+arq.write("______ DUMMY ______ \n")
+arq.write("______ DUMMY ______ \n")
+arq.write(" MESREF= {1}/{2}   ANOESCOLHIDO= {0} \n".format(ano, mesref, anoarq))
+
+c = 0  # var de iteraÃ§Ã£o
+d = 0  # var de iteraÃ§Ã£o
+while c < len(new):
+    for i in new[c]:
+        if d == 0:
+            arq.write("%2s" % "")
+            arq.write("%3d" % (int(i)))  # Numero
+            arq.write("%1s" % "")
+        elif d == 1:
+            arq.write('%-11s' % (str(i)))  # Nome
+            arq.write("%2s" % "")  # Obs: Segundo o manual seria apenas "1" espaÃ§o e nÃ£o "2" como no exemplo
+        else:
+            arq.write("%9.2f" % (float(i)))  # VazÃµes
+            arq.write("%1s" % "")
+        d += 1
+    d = 0
+    arq.write("\n")
+    c += 1
+
+arq.close()
+
+# Mensagem Final
+print("\nO arquivo VAZPAST.DAT referente Ã s vazÃµes do ano de {0} foi gerado com sucesso em:!".format(ano))
+print(arqdir + "/VAZPAST.DAT")
