@@ -1,5 +1,5 @@
-# Este programa recebe um arquivo binÃ¡rio VAZOES.DAT dos modelos NEWAVE e DECOMP, recebe
-# do usuÃ¡rio o ano desejado das vazÃµes nos postos de mediÃ§Ã£o e cria um novo arquivo
+# Este programa recebe um arquivo binário VAZOES.DAT dos modelos NEWAVE e DECOMP, recebe
+# do usuário o ano desejado das vazões nos postos de medição e cria um novo arquivo
 # VAZPAST.DAT transcrito conforme descrito na seÃ§Ã£o 3.21.3 do manual NEWAVE
 
 import numpy as np
@@ -7,17 +7,17 @@ from codpostos import postosdemed
 from tkinter import Tk
 from tkinter import filedialog
 
-# Solicita arquivo binÃ¡rio de entrada
+# Solicita arquivo binário de entrada
 print("Selecione o arquivo binÃ¡rio de vazÃµes (VAZOES.DAT).")
 Tk().withdraw()
 entrada = filedialog.askopenfilename(filetypes=[("Arq. BinÃ¡rio", ".DAT"), ("All Files", ".*")],
                                      title="Selecione o arquivo binÃ¡rio VAZOES.DAT:")
 
-# Abre o arquivo binÃ¡rio em uma lista
+# Abre o arquivo binário em uma lista
 with open(entrada, "rb") as arq:
     lista = np.fromfile(arq, dtype=np.int).tolist()
 
-# VariÃ¡veis iniciais de cÃ¡lculo
+# Variáveis iniciais de cálculo
 col = 320
 lin = int(len(lista)/col)
 qtdeanos = lin / 12
@@ -34,7 +34,7 @@ for i in range(lin):
     matriz.append(linha)
 mat = np.array(matriz)
 
-# Pesquisa o mÃªs de referÃªncia do arquivo de entrada com base no posto 1
+# Pesquisa o mês de referência do arquivo de entrada com base no posto 1
 mesref = 0
 a = True  # var de iteraÃ§Ã£o
 g = -1    # var de iteraÃ§Ã£o
